@@ -30,14 +30,14 @@ const AddBlog = () => {
             formData.append("blog",JSON.stringify(blog));
             formData.append("imageFile",image);
             const token = localStorage.getItem("token");
-            console.log(token);
+            // console.log(token);
 
             const {data}=await axios.post("/api/blog/add",formData,{
   headers: {
     token: token,
   },
 });
-            console.log(data);
+            // console.log(data);
 
             if(data.success){
                 toast.success(data.message);
