@@ -2,13 +2,14 @@ import fs from "fs";
 import imagekit from "../config/imagekit.js";
 import Blog from "../models/blog.js";
 import Comment from "../models/comment.js";
+import main from "../config/gemini.js";
 export const addBlog=async(req,res)=>{
     try{
-            const {title,subTitle,description,category,isPublished}=JSON.parse(req.body.blog);
+            const {title,subTitle,authorName,description,category,isPublished}=JSON.parse(req.body.blog);
             const imageFile=req.file;
 
 
-            if(!title || !description || ! category || !category || !imageFile){
+            if(!title ||!authorName || !description || ! category || !category || !imageFile){
                 return res.json({
                     success:false, message:"fields are missing!"
                 })
@@ -37,7 +38,7 @@ export const addBlog=async(req,res)=>{
             const image=optimizedImageUrl;
             console.log(image);
 
-            await Blog.create({title,subTitle,description,category,image,isPublished})
+            await Blog.create({title,subTitle,authorName,description,category,image,isPublished})
 
 
             res.json({
@@ -103,7 +104,8 @@ export const deleteBlogById=async(req,res)=>{
 export const togglePublish=async(req,res)=>{
     try{
         const {blogId}=req.body;
-        const blog=await Blog.findById({_id:blogId});
+        const blog=await Blog.findById(blogId);
+        console.log(blog);
         blog.isPublished=!blog.isPublished;
 
         await blog.save();
@@ -118,10 +120,10 @@ export const togglePublish=async(req,res)=>{
 
 export const addComment=async(req,res)=>{
     try{
-            const {blog,name,content}=req.body;
+            const {blog,name,comment}=req.body;
 
             await Comment.create({
-                blog,name,content
+                blog,name,comment
             })
 
             res.json({
@@ -137,7 +139,9 @@ export const getAllComments=async(req,res)=>{
     try{
             const {blogId}=req.body;
 
-            const comments=await Comment.find({blog:blogId,isApproved:true}).sort({createdAt:-1});
+const comments = await Comment.find({ blog: blogId, isApproved: true })
+  .populate('blog')
+  .sort({ createdAt: -1 });
             res.json({
                 success:true,comments
             })
@@ -146,5 +150,18 @@ export const getAllComments=async(req,res)=>{
         res.json({
             success:false,message:error.message
         })
+    }
+}
+
+
+export const generateContent=async(req,res)=>{
+    try{
+        const {prompt}=req.body;
+const content = await main(`${prompt} - Generate a blog content for this topic in simple text format without any introductory sentence or paragraph. Keep it direct and topic-focused.`);        res.json({success:true,content})
+    }
+    catch(error){
+            res.json({
+                success:false, message:error.message
+            })
     }
 }

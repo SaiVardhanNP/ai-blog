@@ -17,6 +17,7 @@ const Blog = () => {
   const [data, setData] = useState(null);
   const [comments, setComments] = useState([]);
   const [name, setName] = useState("");
+  const [authorName,setAuthorName]=useState("");
   const [comment, setComment] = useState("");
 
   const fetchComments = async () => {
@@ -24,6 +25,7 @@ const Blog = () => {
           const {data}=await axios.post("/api/blog/comments",{blogId:id})
           if(data.success){
             setComments(data.comments);
+                  console.log(data.comments); // 👈 Add this line here
           }
           else{
             toast.error(data.message);
@@ -49,7 +51,8 @@ const Blog = () => {
   const addComment = async (e) => {
     e.preventDefault();
     try{
-       const {data}=await axios.post('/api/blog/add-comment',{blog:id,name:name,content:comment})
+       const {data}=await axios.post('/api/blog/add-comment',{blog:id,name:name,comment:comment})
+       console.log(comment);
        console.log(data);
         if(data.success){
           toast.success(data.message);
@@ -81,7 +84,7 @@ const Blog = () => {
         <p className='text-primary py-4 font-medium'>Published on {Moment(data.createdAt).format("MMMM Do YYYY")}</p>
         <h1 className='text-2xl sm:text-5xl font-semibold max-w-2xl mx-auto text-gray-800'>{data.title}</h1>
         <h2 className='my-5 max-w-lg truncate mx-auto'>{data.subTitle}</h2>
-        <p className='inline-block py-1 px-4 rounded-full mb-6 border text-sm border-primary/25 bg-primary/5 font-medium text-primary'>Rabindranath Tagore</p>
+        <p className='inline-block py-1 px-4 rounded-full mb-6 border text-sm border-primary/25 bg-primary/5 font-medium text-primary'>{data.authorName}</p>
       </div>
       <div className='mx-5 max-w-5xl md:mx-auto my-10 mt-6'>
         <img src={data.image} alt="" className='rounded-3xl mb-5' />
@@ -92,12 +95,14 @@ const Blog = () => {
           <div className='flex flex-col gap-4'>
             {
               comments.map((item, index) => (
+                
                 <div key={index} className='relative bg-primary/2 border border-primary/5 max-w-xl p-4 rounded text-gray-600'>
+                  {console.log(item.comment)}
                   <div>
                     <img src={assets.user_icon} className='w-6' alt="" />
                     <p className="font-medium">{item.name}</p>
                   </div>
-                  <p className='text-sm max-w-md ml-8'>{item.content}</p>
+                  <p className='text-sm max-w-md ml-8'>{item.comment}</p>
                   <div className='absolute right-4 bottom-3 flex items-center gap-2 text-xs'>{Moment(item.createdAt).fromNow()}</div>
 
                 </div>
@@ -108,7 +113,7 @@ const Blog = () => {
         <div className='max-w-3xl mx-auto'>
           <p className="font-semibold mb-4">Add your comment</p>
           <form onSubmit={addComment} className='flex flex-col items-start gap-4 max-w-lg'>
-            <input onChange={(e) => setName(e.target.value)} type="text" placeholder='Name' required className='w-full p-2 border border-gray-300 rounded outline-none' />
+            <input onChange={(e) => {console.log(e.target.value); setName(e.target.value)}} type="text" placeholder='Name' required className='w-full p-2 border border-gray-300 rounded outline-none' />
             <textarea onChange={(e) => setComment(e.target.value)} className='w-full p-2 border border-gray-300 rounded outline-none h-40' placeholder='Comment' required></textarea>
             <button type="submit" className='bg-primary text-white rounded p-2 px-8 hover:scale-102 transition-all cursor-pointer'>Submit</button>
           </form>
